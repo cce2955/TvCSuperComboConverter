@@ -1,5 +1,3 @@
-# Fighting Game Numpad Notation to File Output
-
 function Map-Notation {
     param (
         [string]$token
@@ -11,7 +9,7 @@ function Map-Notation {
         "B" = "[[File:TVC-M.png|50px]]"
         "C" = "[[File:TVC-H.png|50px]]"
         "P" = "[[File:TVC-P.png|50px]]"
-        "AT" = "[[File:TVC-AT.png|50px]]"
+        "X" = "[[File:TVC-AT.png|50px]]"
         "BBQ" = "[[File:TVC-BBQ.png|50px]]"
         "TK" = "[[File:TVC-TK.png|50px]]"
         "SJC" = "[[File:TVC-SJC.png|50px]]"
@@ -73,7 +71,7 @@ function Prompt-MotionNames {
 
 while ($true) {
     Write-Host "==================================================="
-    Write-Host "Fighting Game Numpad Notation to File Output"
+    Write-Host "TvC Wiki Numpad Notation Converter"
     Write-Host "==================================================="
     $input = Read-Host "Enter a numpad notation sequence (e.g., A B 236C) or type 'exit' to quit"
 
@@ -87,10 +85,9 @@ while ($true) {
     # Tokenize the input
     $tokens = $inputUpper -split ' '
 
-    # Extract unique motions (exclude single numbers like 2, 6)
+    # Extract unique motions (exclude single numbers like 2, 6 and 'X')
     $motionTokens = @()
     foreach ($token in $tokens) {
-        # Extract motion part (e.g., 236 from 236A) and ensure it's a motion, not a single number
         if ($token -match "^([0-9]{3,})([A-Z]*)$") {
             $motion = $matches[1]
             if (-not ($motionTokens -contains $motion)) {
@@ -113,7 +110,7 @@ while ($true) {
         }
 
         # Handle TvC-Colors for motions
-        if ($token -match "^([0-9]+)([A-Z]*)$") {
+        if ($token -match "^([0-9]+)([A-Z]*)$" -and $token -notmatch "^X$") {
             $motion = $matches[1]
             $button = $matches[2]
             if ($motionNames.ContainsKey($motion)) {
@@ -122,7 +119,7 @@ while ($true) {
                 $color = $parts[0]
                 $name = $parts[1]
 
-                # If not green, assign the button-based color
+                # Assign button-based color if not green
                 if ($color -eq "default") {
                     if ($button -eq "A") {
                         $color = "blue"
@@ -138,6 +135,9 @@ while ($true) {
                 }
                 $colorResult += "{{TvC-Colors|$color|$name}}"
             }
+        } elseif ($token -eq "X") {
+            # Map X directly to a color and name
+            $colorResult += "{{TvC-Colors|purple|Assist}}"
         } elseif ($token -match "A$") {
             $colorResult += "{{TvC-Colors|blue|$token}}"
         } elseif ($token -match "B$") {
