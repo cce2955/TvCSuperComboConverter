@@ -1,75 +1,101 @@
-function Map-Notation {
-    param (
-        [string]$token
-    )
+function Get-Mapping {
+    param ([string]$token)
 
-    # Buttons with colors
+    # Define mappings
     $mapping = @{
-        "A" = @{"file" = "[[File:TVC-L.png|50px]]"; "color" = "blue"}
-        "B" = @{"file" = "[[File:TVC-M.png|50px]]"; "color" = "yellow"}
-        "C" = @{"file" = "[[File:TVC-H.png|50px]]"; "color" = "red"}
-        "P" = @{"file" = "[[File:TVC-P.png|50px]]"; "color" = "green"}
-        "X" = @{"file" = "[[File:TVC-AT.png|50px]]"; "color" = "purple"}
-        "BBQ" = @{"file" = "[[File:TVC-BBQ.png|50px]]"; "color" = "BBQ"}
-        "TK" = @{"file" = "[[File:TVC-TK.png|50px]]"; "color" = "TK"}
-        "SJC" = @{"file" = "[[File:TVC-SJC.png|50px]]"; "color" = "SJC"}
+        "A" = @{"color" = "blue"; "file" = "[[File:TVC-L.png|50px]]"}
+        "B" = @{"color" = "yellow"; "file" = "[[File:TVC-M.png|50px]]"}
+        "C" = @{"color" = "red"; "file" = "[[File:TVC-H.png|50px]]"}
+        "P" = @{"color" = "green"; "file" = "[[File:TVC-P.png|50px]]"}
+        "X" = @{"color" = "green"; "file" = "[[File:TVC-AT.png|50px]]"}
+        "BBQ" = @{"color" = "bbq"; "file" = "[[File:TVC-BBQ.png|50px]]"}
+        "TK" = @{"color" = "white"; "file" = "[[File:TVC-TK.png|50px]]"}
+        "SJC" = @{"color" = "white"; "file" = "[[File:TVC-SJC.png|50px]]"}
     }
 
-    # Directions (motions remain white)
-    $mapping += @{
-        "5" = @{"file" = "[[File:TVC-neutral.png|50px]]"; "color" = "white"}
-        "2" = @{"file" = "[[File:TVC-2.png|50px]]"; "color" = "white"}
-        "8" = @{"file" = "[[File:TVC-8.png|50px]]"; "color" = "white"}
-        "4" = @{"file" = "[[File:TVC-4.png|50px]]"; "color" = "white"}
-        "6" = @{"file" = "[[File:TVC-6.png|50px]]"; "color" = "white"}
-        "1" = @{"file" = "[[File:TVC-1.png|50px]]"; "color" = "white"}
-        "3" = @{"file" = "[[File:TVC-3.png|50px]]"; "color" = "white"}
-        "7" = @{"file" = "[[File:TVC-7.png|50px]]"; "color" = "white"}
-        "9" = @{"file" = "[[File:TVC-9.png|50px]]"; "color" = "white"}
-        "236" = @{"file" = "[[File:TVC-236.png|50px]]"; "color" = "white"}
-        "214" = @{"file" = "[[File:TVC-214.png|50px]]"; "color" = "white"}
-        "623" = @{"file" = "[[File:TVC-623.png|50px]]"; "color" = "white"}
-        "421" = @{"file" = "[[File:TVC-421.png|50px]]"; "color" = "white"}
-        "41236" = @{"file" = "[[File:TVC-41236.png|50px]]"; "color" = "white"}
-        "63214" = @{"file" = "[[File:TVC-63214.png|50px]]"; "color" = "white"}
-        "360" = @{"file" = "[[File:TVC-360.png|50px]]"; "color" = "white"}
+    $motions = @{
+        "5" = "[[File:TVC-neutral.png|50px]]"
+        "2" = "[[File:TVC-2.png|50px]]"
+        "8" = "[[File:TVC-8.png|50px]]"
+        "4" = "[[File:TVC-4.png|50px]]"
+        "6" = "[[File:TVC-6.png|50px]]"
+        "1" = "[[File:TVC-1.png|50px]]"
+        "3" = "[[File:TVC-3.png|50px]]"
+        "7" = "[[File:TVC-7.png|50px]]"
+        "9" = "[[File:TVC-9.png|50px]]"
+        "236" = "[[File:TVC-236.png|50px]]"
+        "214" = "[[File:TVC-214.png|50px]]"
+        "623" = "[[File:TVC-623.png|50px]]"
+        "421" = "[[File:TVC-421.png|50px]]"
+        "41236" = "[[File:TVC-41236.png|50px]]"
+        "63214" = "[[File:TVC-63214.png|50px]]"
+        "360" = "[[File:TVC-360.png|50px]]"
     }
-
-    # Split mixed tokens (e.g., 236A)
-    if ($token -match "^([0-9]+)([A-Z]+)$") {
-        $direction = $matches[1]
-        $button = $matches[2]
-        return "{{TvCUnderline|color=$($mapping[$direction]['color'])|$($mapping[$direction]['file'])}} {{TvCUnderline|color=$($mapping[$button]['color'])|$($mapping[$button]['file'])}}"
-    }
-
-    # Map simple tokens
-    return "{{TvCUnderline|color=$($mapping[$token]['color'])|$($mapping[$token]['file'])}}"
+	if ($token -eq "BBQ") {
+    $color = "linear-gradient(to right, #FF69B4, #FF1493, #FFA500, #FFD700, #00CED1)"
+    $file = "[[File:TVC-BBQ.png|50px]]"
+    return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
 }
 
 
+    return @{"mapping" = $mapping; "motions" = $motions}
+}
 
-function Prompt-MotionNames {
+function Process-Token {
     param (
-        [array]$motions
+        [string]$token,
+        [hashtable]$mappingData
     )
-    $motionNames = @{}
 
-    foreach ($motion in $motions) {
-        $name = Read-Host "Enter a name for $motion (leave blank to keep as $motion)"
-        if ([string]::IsNullOrWhiteSpace($name)) {
-            $name = $motion
+    $mapping = $mappingData["mapping"]
+    $motions = $mappingData["motions"]
+
+    # Handle special tokens like BBQ, TK, SJC
+    if ($mapping.ContainsKey($token)) {
+        $file = $mapping[$token]['file']
+        $color = $mapping[$token]['color']
+
+        # Special handling for BBQ with gradient
+        if ($token -eq "BBQ") {
+            $color = "linear-gradient(to right, #FF69B4, #FF1493, #FFA500, #FFD700, #00CED1)"
         }
 
-        $isGreen = Read-Host "Should $name be green? (yes/no)"
-        if ($isGreen -match "^(yes|y)$") {
-            $motionNames[$motion] = "green|$name"
-        } else {
-            $motionNames[$motion] = "default|$name"
+        return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
+    }
+
+    # Handle mixed tokens (e.g., 236A)
+    if ($token -match "^([0-9]+)([A-Z]+)$") {
+        $motion = $matches[1]
+        $button = $matches[2]
+
+        if ($motions.ContainsKey($motion) -and $mapping.ContainsKey($button)) {
+            $motionFile = $motions[$motion]
+            $buttonFile = $mapping[$button]['file']
+            $buttonColor = $mapping[$button]['color']
+            $notation = "{{TvCUnderline|color=$buttonColor|$motionFile $buttonFile}}"
+            $color = "{{TvC-Colors|$buttonColor|$motion$button}}" # Include motion + button in TvC-Colors
+            return @($notation, $color)
         }
     }
 
-    return $motionNames
+    # Handle standalone tokens (e.g., A, B, C)
+    if ($mapping.ContainsKey($token)) {
+        $file = $mapping[$token]['file']
+        $color = $mapping[$token]['color']
+        return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
+    }
+
+    # Handle standalone motions (e.g., 236, 214)
+    if ($motions.ContainsKey($token)) {
+        $motionFile = $motions[$token]
+        $notation = "{{TvCUnderline|color=white|$motionFile}}" # Motions default to white
+        $color = "{{TvC-Colors|white|$token}}"
+        return @($notation, $color)
+    }
+
+    return @($null, $null) # Return null if not recognized
 }
+
 
 while ($true) {
     Write-Host "==================================================="
@@ -81,80 +107,35 @@ while ($true) {
         break
     }
 
-    # Convert input to uppercase
-    $inputUpper = $input.ToUpper()
+    # Load mapping data
+    $mappingData = Get-Mapping
 
     # Tokenize the input
-    $tokens = $inputUpper -split ' '
+    $tokens = $input.ToUpper() -split ' '
 
-    # Extract unique motions (exclude single numbers like 2, 6 and 'X')
-    $motionTokens = @()
-    foreach ($token in $tokens) {
-        if ($token -match "^([0-9]{3,})([A-Z]*)$") {
-            $motion = $matches[1]
-            if (-not ($motionTokens -contains $motion)) {
-                $motionTokens += $motion
-            }
-        }
-    }
-
-    # Prompt for motion names and colors
-    $motionNames = Prompt-MotionNames -motions $motionTokens
-
-    # Process tokens and build result
+    # Process each token
     $notationResult = @()
     $colorResult = @()
+
+  # Process each token
 foreach ($token in $tokens) {
-    # Map to file notation
-    $mapped = Map-Notation -token $token
-    if ($null -ne $mapped) {
-        $notationResult += $mapped
+    $results = Process-Token -token $token -mappingData $mappingData
+    if ($results[0] -ne $null) {
+        $notationResult += $results[0]
     }
-
-    # Handle TvC-Colors for motions
-    if ($token -match "^([0-9]+)([A-Z]*)$" -and $token -notmatch "^X$") {
-        $motion = $matches[1]
-        $button = $matches[2]
-        if ($motionNames.ContainsKey($motion)) {
-            $colorMapping = $motionNames[$motion]
-            $parts = $colorMapping -split '\|'
-            $color = $parts[0]
-            $name = $parts[1]
-
-            # Assign button-based color if not green
-            if ($color -eq "default") {
-                if ($button -eq "A") {
-                    $color = "blue"
-                } elseif ($button -eq "B") {
-                    $color = "yellow"
-                } elseif ($button -eq "C") {
-                    $color = "red"
-                }
-            }
-
-            if ($button -ne "") {
-                $name = "$name $button" # Format as "{definition} {strength}"
-            }
-
-            # Wrap with TvCUnderline
-            $colorResult += "{{TvC-Colors|$color|$name}}"
-        }
-    } elseif ($token -eq "X") {
-        # Map X directly to a color and name, wrapped with TvCUnderline
-        $colorResult += "{{TvC-Colors|purple|Assist}}"
-    } elseif ($token -match "A$") {
-        $colorResult += "{{TvC-Colors|blue|$token}}"
-    } elseif ($token -match "B$") {
-        $colorResult += "{{TvC-Colors|yellow|$token}}"
-    } elseif ($token -match "C$") {
-        $colorResult += "{{TvC-Colors|red|$token}}"
+    if ($results[1] -ne $null) {
+        $colorResult += $results[1]
     }
 }
 
-    # Output the result
-    Write-Host "|notation= $($notationResult -join ' ')"
-    if ($colorResult.Count -gt 0) {
-        Write-Host "`n$($colorResult -join ' &ensp; ')"
-    }
+# Output results
+Write-Host "|notation= $($notationResult -join ' ')"
+if ($colorResult.Count -gt 0) {
+    Write-Host "`n$($colorResult -join ' &ensp; ')"
+}
+
     Write-Host ""
 }
+
+
+
