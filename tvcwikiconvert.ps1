@@ -3,7 +3,6 @@ function Get-Mapping {
     param ([string]$token)
 
     # Define button mappings
-    # Each button is associated with a color and a file reference
     $mapping = @{
         "A" = @{"color" = "blue"; "file" = "[[File:TVC-L.png|50px]]"}    # Light attack
         "B" = @{"color" = "yellow"; "file" = "[[File:TVC-M.png|50px]]"}  # Medium attack
@@ -15,8 +14,7 @@ function Get-Mapping {
         "SJC" = @{"color" = "white"; "file" = "[[File:TVC-SJC.png|50px]]"} # Super Jump Cancel
     }
 
-    # Define motion mappings
-    # Motions are numerical sequences representing directional inputs
+    # Add a blank line to separate logical sections
     $motions = @{
         "5" = "[[File:TVC-neutral.png|50px]]"       # Neutral position
         "2" = "[[File:TVC-2.png|50px]]"            # Down direction
@@ -37,25 +35,24 @@ function Get-Mapping {
     }
 
     # Special case: BBQ (with a gradient color background)
-    # Returns formatted output for BBQ specifically
     if ($token -eq "BBQ") {
         $color = "linear-gradient(to right, #FF69B4, #FF1493, #FFA500, #FFD700, #00CED1)"
         $file = "[[File:TVC-BBQ.png|50px]]"
+
         return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
     }
 
-    # Return both mappings in a hashtable
     return @{"mapping" = $mapping; "motions" = $motions}
 }
 
 # Function to process individual tokens (e.g., A, 236A, BBQ)
 function Process-Token {
     param (
-        [string]$token,      # Input token (e.g., A, 236A)
-        [hashtable]$mappingData # Hashtable of mappings (buttons and motions)
+        [string]$token,
+        [hashtable]$mappingData
     )
 
-    # Extract button and motion mappings from input hashtable
+    # Extract button and motion mappings
     $mapping = $mappingData["mapping"]
     $motions = $mappingData["motions"]
 
@@ -69,49 +66,45 @@ function Process-Token {
             $color = "linear-gradient(to right, #FF69B4, #FF1493, #FFA500, #FFD700, #00CED1)"
         }
 
-        # Return notation and color formatting for the token
         return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
     }
 
-    # Handle mixed tokens (e.g., motion + button like 236A)
+    # Handle mixed tokens (e.g., 236A)
     if ($token -match "^([0-9]+)([A-Z]+)$") {
-        $motion = $matches[1]  # Extract motion (e.g., 236)
-        $button = $matches[2]  # Extract button (e.g., A)
+        $motion = $matches[1]
+        $button = $matches[2]
 
-        # Check if both motion and button are defined
         if ($motions.ContainsKey($motion) -and $mapping.ContainsKey($button)) {
-            $motionFile = $motions[$motion]              # Motion file
-            $buttonFile = $mapping[$button]['file']      # Button file
-            $buttonColor = $mapping[$button]['color']    # Button color
+            $motionFile = $motions[$motion]
+            $buttonFile = $mapping[$button]['file']
+            $buttonColor = $mapping[$button]['color']
 
-            # Format the combined output for notation and color
             $notation = "{{TvCUnderline|color=$buttonColor|$motionFile $buttonFile}}"
-            $color = "{{TvC-Colors|$buttonColor|$motion$button}}" # Motion + button formatting
+            $color = "{{TvC-Colors|$buttonColor|$motion$button}}"
+
             return @($notation, $color)
         }
     }
 
-    # Handle standalone buttons (e.g., A, B, C)
+    # Handle standalone buttons
     if ($mapping.ContainsKey($token)) {
         $file = $mapping[$token]['file']
         $color = $mapping[$token]['color']
 
-        # Return formatting for standalone buttons
         return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
     }
 
-    # Handle standalone motions (e.g., 236, 214)
+    # Handle standalone motions
     if ($motions.ContainsKey($token)) {
         $motionFile = $motions[$token]
 
-        # Default motion color is white
         $notation = "{{TvCUnderline|color=white|$motionFile}}"
         $color = "{{TvC-Colors|white|$token}}"
+
         return @($notation, $color)
     }
 
-    # Return null values if the token is not recognized
-    return @($null, $null)
+    return @($null, $null) # If unrecognized
 }
 
 # Main loop for user interaction
@@ -120,41 +113,43 @@ while ($true) {
     Write-Host "TvC Wiki Numpad Notation Converter"
     Write-Host "==================================================="
 
-    # Prompt user for input or exit
     $input = Read-Host "Enter a numpad notation sequence (e.g., A B 236C) or type 'exit' to quit"
-
-    # Break loop if the user chooses to exit
+	
+	Write-Host ""
+	
     if ($input -eq "exit") {
         break
     }
 
-    # Load mappings for buttons and motions
+    # Load mappings
     $mappingData = Get-Mapping
 
-    # Tokenize the user input by spaces and convert to uppercase
+    # Tokenize user input
     $tokens = $input.ToUpper() -split ' '
 
-    # Initialize results for formatted outputs
+    # Initialize result storage
     $notationResult = @()
     $colorResult = @()
 
-    # Process each token individually
+    # Process tokens
     foreach ($token in $tokens) {
         $results = Process-Token -token $token -mappingData $mappingData
+
         if ($results[0] -ne $null) {
-            $notationResult += $results[0]  # Add to notation output
+            $notationResult += $results[0]
         }
+
         if ($results[1] -ne $null) {
-            $colorResult += $results[1]     # Add to color output
+            $colorResult += $results[1]
         }
     }
 
-    # Output the formatted results for notation and color
+    # Output results
     Write-Host "|notation= $($notationResult -join ' ')"
+
     if ($colorResult.Count -gt 0) {
         Write-Host "`n$($colorResult -join ' &ensp; ')"
     }
 
-    # Add a blank line for spacing
     Write-Host ""
 }
