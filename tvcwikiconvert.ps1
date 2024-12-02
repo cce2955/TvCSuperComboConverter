@@ -10,13 +10,15 @@ function Get-Mapping {
         "P" = @{color="red"; file="[[File:TVC-P.png|$imageSize]]"}       # Partner/Assist
         "X" = @{color="purple"; file="[[File:TVC-AT.png|$imageSize]]"}   # Special action
         "XX" = @{color="purple"; file="[[File:TVC-AT.png|$imageSize]] [[File:TVC-AT.png|$imageSize]]"} # Double special
-        "BBQ" = @{color="gradient"; file="[[File:TVC-baroque.png|80px]]"} # Burst mechanics
+        "BBQ" = @{color="gradient"; file="[[File:TVC-baroque.png|80px]]"} # bbq
         "TK" = @{color="gray"; file="[[File:TVC-TK.png|$imageSize]]"}    # Tiger Knee motion
         "SJC" = @{color="cyan"; file="[[File:TVC-SJC.png|$imageSize]]"}  # Super Jump Cancel
         "drill" = @{color="pink"; file="[[File:TVC-L.png|$imageSize]] [[File:TVC-M.png|$imageSize]] -> [[File:TVC-L.png|$imageSize]] [[File:TVC-M.png|$imageSize]] -> [[File:TVC-M.png|$imageSize]] [[File:TVC-H.png|$imageSize]]"}
         "charge" = @{color="white"; file="[[File:TVC-charge.png|50px]]"} # Charge command (inherits color from button grouping)
         "hold" = @{color="orange"; file="[[File:TvC-hold.png|75px]]"} # Hold down
         "release" = @{color="purple"; file="[[File:TVC-Release.png|50px]]"} # Release button
+		"~JC" = @{color="skyblue"; file="jump cancel"} # Jump Cancel
+
     }
 
     # Define special underline colors (same as numpad colors)
@@ -34,6 +36,8 @@ function Get-Mapping {
         "charge" = "white" # Charge motion, overrides when grouped
         "hold" = "orange" # Hold down
         "release" = "purple" # Release button
+		"~JC" = "skyblue" # Jump Cancel underline
+
     }
 
     # Define motion mappings for directional inputs
@@ -75,6 +79,17 @@ function Process-Token {
     if ($isJump) {
         $token = $token.Substring(2)  # Remove the "j." prefix
     }
+	# Handle Jump Cancel (~JC) token
+if ($token -eq "~JC") {
+    $file = $mapping[$token]['file']
+    $color = $mapping[$token]['color']
+    $underlineColor = $underlineMapping[$token]
+
+    return @(
+        "{{TvCUnderline|color=$underlineColor|$file}}",
+        "{{TvC-Colors|$color|jc}}"
+    )
+}
 
     # Handle grouped motions with buttons (e.g., 66, 66A, 22, 22C, etc.)
     if ($token -match "^(22|66|44)([A-Z]*)$") {
@@ -107,6 +122,29 @@ function Process-Token {
             )
         }
     }
+	# Handle chained actions (e.g., 214X.A, 623X.X.214X)
+if ($token -match "\.") {
+    $subTokens = $token -split "\." # Split the token into segments
+    $notationResults = @()
+    $colorResults = @()
+
+    foreach ($subToken in $subTokens) {
+        $results = Process-Token -token $subToken -mappingData $mappingData
+
+        if ($results[0] -ne $null) {
+            $notationResults += $results[0] # Collect notation icons
+        }
+        if ($results[1] -ne $null) {
+            $colorResults += $results[1] # Collect color-coded output
+        }
+    }
+
+    # Join results with "->" and return
+    return @(
+        ($notationResults -join " -> "),
+        ($colorResults -join " -> ")
+    )
+}
 
     # Handle charge groups (e.g., 2charge8, 4charge6, etc.)
     if ($token -match "^([0-9])charge([0-9])([A-Z]*)$") {
