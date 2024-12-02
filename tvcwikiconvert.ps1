@@ -263,7 +263,7 @@ if ($mapping.ContainsKey($token)) {
             )
         }
     }
-	# Handle "Hold Down" and "Release" commands
+# Handle "Hold Down" and "Release" commands
 if ($token -match "^(hold|release)([A-Z]*)$") {
     $command = $matches[1]
     $button = $matches[2]
@@ -272,24 +272,32 @@ if ($token -match "^(hold|release)([A-Z]*)$") {
     $color = $mapping[$command]['color']
     $underlineColor = $underlineMapping[$command]
 
+    # Format the numpad notation as Hold(button)/release(button)
+    $formattedNotation = ""
+    if ($command -eq "hold") {
+        $formattedNotation = "Hold($button)"
+    } elseif ($command -eq "release") {
+        $formattedNotation = "release($button)"
+    }
+
     if ($button -ne "") {
         if ($mapping.ContainsKey($button)) {
             $buttonFile = $mapping[$button]['file']
             $buttonColor = $mapping[$button]['color']
-            $buttonUnderlineColor = $underlineMapping[$button]
 
             return @(
                 "{{TvCUnderline|color=$underlineColor|$file $buttonFile}}",
-                "{{TvC-Colors|$buttonColor|$command$button}}"
+                "{{TvC-Colors|$buttonColor|$formattedNotation}}"
             )
         }
     }
 
     return @(
         "{{TvCUnderline|color=$underlineColor|$file}}",
-        "{{TvC-Colors|$color|$command}}"
+        "{{TvC-Colors|$color|$formattedNotation}}"
     )
 }
+
 
     # Handle standalone motions
     if ($motions.ContainsKey($token)) {
