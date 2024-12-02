@@ -1,37 +1,38 @@
+
 # Function to define mappings for buttons and motions
 function Get-Mapping {
     param ([string]$token)
-
+	$imageSize = "30px"  # You can adjust this value as needed
     # Define button mappings
-    $mapping = @{
-        "A" = @{"color" = "blue"; "file" = "[[File:TVC-L.png|50px]]"}    # Light attack
-        "B" = @{"color" = "yellow"; "file" = "[[File:TVC-M.png|50px]]"}  # Medium attack
-        "C" = @{"color" = "red"; "file" = "[[File:TVC-H.png|50px]]"}     # Heavy attack
-        "P" = @{"color" = "green"; "file" = "[[File:TVC-P.png|50px]]"}   # Partner/Assist
-        "X" = @{"color" = "green"; "file" = "[[File:TVC-AT.png|50px]]"}  # Special action
-        "BBQ" = @{"color" = "bbq"; "file" = "[[File:TVC-BBQ.png|50px]]"} # Burst mechanics with a gradient
-        "TK" = @{"color" = "white"; "file" = "[[File:TVC-TK.png|50px]]"} # Tiger Knee motion
-        "SJC" = @{"color" = "white"; "file" = "[[File:TVC-SJC.png|50px]]"} # Super Jump Cancel
+  $mapping = @{
+        "A" = @{color="blue"; file="[[File:TVC-L.png|$imageSize]]"}    # Light attack
+        "B" = @{color="yellow"; file="[[File:TVC-M.png|$imageSize]]"}  # Medium attack
+        "C" = @{color="red"; file="[[File:TVC-H.png|$imageSize]]"}     # Heavy attack
+        "P" = @{color="green"; file="[[File:TVC-P.png|$imageSize]]"}   # Partner/Assist
+        "X" = @{color="green"; file="[[File:TVC-AT.png|$imageSize]]"}  # Special action
+        "BBQ" = @{color="bbq"; file="[[File:TVC-BBQ.png|$imageSize]]"} # Burst mechanics
+        "TK" = @{color="white"; file="[[File:TVC-TK.png|$imageSize]]"} # Tiger Knee motion
+        "SJC" = @{color="white"; file="[[File:TVC-SJC.png|$imageSize]]"} # Super Jump Cancel
     }
 
     # Add a blank line to separate logical sections
     $motions = @{
-        "5" = "[[File:TVC-neutral.png|50px]]"       # Neutral position
-        "2" = "[[File:TVC-2.png|50px]]"            # Down direction
-        "8" = "[[File:TVC-8.png|50px]]"            # Up direction
-        "4" = "[[File:TVC-4.png|50px]]"            # Backward direction
-        "6" = "[[File:TVC-6.png|50px]]"            # Forward direction
-        "1" = "[[File:TVC-1.png|50px]]"            # Down-back
-        "3" = "[[File:TVC-3.png|50px]]"            # Down-forward
-        "7" = "[[File:TVC-7.png|50px]]"            # Up-back
-        "9" = "[[File:TVC-9.png|50px]]"            # Up-forward
-        "236" = "[[File:TVC-236.png|50px]]"        # Quarter circle forward
-        "214" = "[[File:TVC-214.png|50px]]"        # Quarter circle backward
-        "623" = "[[File:TVC-623.png|50px]]"        # Dragon punch motion
-        "421" = "[[File:TVC-421.png|50px]]"        # Reverse dragon punch
-        "41236" = "[[File:TVC-41236.png|50px]]"    # Half-circle forward
-        "63214" = "[[File:TVC-63214.png|50px]]"    # Half-circle backward
-        "360" = "[[File:TVC-360.png|50px]]"        # Full-circle motion
+        "5" = "[[File:TVC-neutral.png|$imageSize]]"       # Neutral position
+        "2" = "[[File:TVC-2.png|$imageSize]]"            # Down direction
+        "8" = "[[File:TVC-8.png|$imageSize]]"            # Up direction
+        "4" = "[[File:TVC-4.png|$imageSize]]"            # Backward direction
+        "6" = "[[File:TVC-6.png|$imageSize]]"            # Forward direction
+        "1" = "[[File:TVC-1.png|$imageSize]]"            # Down-back
+        "3" = "[[File:TVC-3.png|$imageSize]]"            # Down-forward
+        "7" = "[[File:TVC-7.png|$imageSize]]"            # Up-back
+        "9" = "[[File:TVC-9.png|$imageSize]]"            # Up-forward
+        "236" = "[[File:TVC-236.png|$imageSize]]"        # Quarter circle forward
+        "214" = "[[File:TVC-214.png|$imageSize]]"        # Quarter circle backward
+        "623" = "[[File:TVC-623.png|$imageSize]]"        # Dragon punch motion
+        "421" = "[[File:TVC-421.png|$imageSize]]"        # Reverse dragon punch
+        "41236" = "[[File:TVC-41236.png|$imageSize]]"    # Half-circle forward
+        "63214" = "[[File:TVC-63214.png|$imageSize]]"    # Half-circle backward
+        "360" = "[[File:TVC-360.png|$imageSize]]"        # Full-circle motion
     }
 
     # Special case: BBQ (with a gradient color background)
