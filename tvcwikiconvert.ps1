@@ -114,9 +114,13 @@ while ($true) {
     Write-Host "==================================================="
 
     $input = Read-Host "Enter a numpad notation sequence (e.g., A B 236C) or type 'exit' to quit"
-	
-	Write-Host ""
-	
+	write-Host ""
+	Write-Host "-----------------------------------------------------------------------------------"
+	Write-Host "----------------Everything below this line can be copied to the wiki---------------"
+	Write-Host "-----------------------------------------------------------------------------------"
+	write-Host ""
+	write-Host ""
+	write-Host ""
     if ($input -eq "exit") {
         break
     }
