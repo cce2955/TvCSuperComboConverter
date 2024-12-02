@@ -1,8 +1,8 @@
-# Function to define mappings for buttons and motions
 function Get-Mapping {
     param ([string]$token)
     $imageSize = "30px"  # You can adjust this value as needed
-    # Define button mappings
+
+    # Define button mappings (for numpad notation colors)
     $mapping = @{
         "A" = @{color="blue"; file="[[File:TVC-L.png|$imageSize]]"}    # Light attack
         "B" = @{color="yellow"; file="[[File:TVC-M.png|$imageSize]]"}  # Medium attack
@@ -12,6 +12,18 @@ function Get-Mapping {
         "BBQ" = @{color="bbq"; file="[[File:TVC-BBQ.png|$imageSize]]"} # Burst mechanics
         "TK" = @{color="white"; file="[[File:TVC-TK.png|$imageSize]]"} # Tiger Knee motion
         "SJC" = @{color="white"; file="[[File:TVC-SJC.png|$imageSize]]"} # Super Jump Cancel
+    }
+
+    # Define special underline colors
+    $underlineMapping = @{
+        "A" = "yellow"
+        "B" = "green"
+        "C" = "blue"
+        "P" = "purple"
+        "X" = "purple"
+        "BBQ" = "orange"
+        "TK" = "gray"
+        "SJC" = "cyan"
     }
 
     $motions = @{
@@ -33,11 +45,9 @@ function Get-Mapping {
         "360" = "[[File:TVC-360.png|$imageSize]]"        # Full-circle motion
     }
 
-    return @{"mapping" = $mapping; "motions" = $motions}
+    return @{"mapping" = $mapping; "underlineMapping" = $underlineMapping; "motions" = $motions}
 }
 
-# Function to process individual tokens (e.g., A, 236A, BBQ)
-# Function to process individual tokens (e.g., A, 236A, BBQ)
 function Process-Token {
     param (
         [string]$token,
@@ -45,14 +55,19 @@ function Process-Token {
     )
 
     $mapping = $mappingData["mapping"]
+    $underlineMapping = $mappingData["underlineMapping"]
     $motions = $mappingData["motions"]
 
-    # Handle special tokens like BBQ, TK, SJC
+    # Handle special tokens (e.g., BBQ, TK, SJC)
     if ($mapping.ContainsKey($token)) {
         $file = $mapping[$token]['file']
         $color = $mapping[$token]['color']
+        $underlineColor = $underlineMapping[$token]
 
-        return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
+        return @(
+            "{{TvCUnderline|color=$underlineColor|$file}}",
+            "{{TvC-Colors|$color|$token}}"
+        )
     }
 
     # Handle mixed tokens (e.g., 236A)
@@ -64,9 +79,10 @@ function Process-Token {
             $motionFile = $motions[$motion]
             $buttonFile = $mapping[$button]['file']
             $buttonColor = $mapping[$button]['color']
+            $underlineColor = $underlineMapping[$button]
 
             return @(
-                "{{TvCUnderline|color=$buttonColor|$motionFile $buttonFile}}", 
+                "{{TvCUnderline|color=$underlineColor|$motionFile $buttonFile}}",
                 "{{TvC-Colors|$buttonColor|$motion$button}}"
             )
         }
