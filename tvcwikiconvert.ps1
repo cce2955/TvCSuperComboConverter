@@ -2,34 +2,34 @@ function Get-Mapping {
     param ([string]$token)
     $imageSize = "30px"  # Adjustable size for image files
 
-    # Define button mappings for numpad notation colors and file paths
+    # Define button mappings for unified colors and file paths
     $mapping = @{
-        "A" = @{color="blue"; file="[[File:TVC-L.png|$imageSize]]"}    # Light attack
-        "B" = @{color="yellow"; file="[[File:TVC-M.png|$imageSize]]"}  # Medium attack
-        "C" = @{color="red"; file="[[File:TVC-H.png|$imageSize]]"}     # Heavy attack
-        "P" = @{color="green"; file="[[File:TVC-P.png|$imageSize]]"}   # Partner/Assist
-        "X" = @{color="purple"; file="[[File:TVC-AT.png|$imageSize]]"} # Special action
-        "XX" = @{color="green"; file="[[File:TVC-AT.png|$imageSize]] [[File:TVC-AT.png|$imageSize]]"} # Double special
-        "BBQ" = @{color="orange"; file="[[File:TVC-BBQ.png|$imageSize]]"} # Burst mechanics
-        "TK" = @{color="gray"; file="[[File:TVC-TK.png|$imageSize]]"}  # Tiger Knee motion
-        "SJC" = @{color="cyan"; file="[[File:TVC-SJC.png|$imageSize]]"} # Super Jump Cancel
+        "A" = @{color="yellow"; file="[[File:TVC-L.png|$imageSize]]"}    # Light attack
+        "B" = @{color="green"; file="[[File:TVC-M.png|$imageSize]]"}     # Medium attack
+        "C" = @{color="blue"; file="[[File:TVC-H.png|$imageSize]]"}      # Heavy attack
+        "P" = @{color="red"; file="[[File:TVC-P.png|$imageSize]]"}       # Partner/Assist
+        "X" = @{color="purple"; file="[[File:TVC-AT.png|$imageSize]]"}   # Special action
+        "XX" = @{color="purple"; file="[[File:TVC-AT.png|$imageSize]] [[File:TVC-AT.png|$imageSize]]"} # Double special
+        "BBQ" = @{color="gradient"; file="[[File:TVC-BBQ.png|$imageSize]]"} # Burst mechanics
+        "TK" = @{color="gray"; file="[[File:TVC-TK.png|$imageSize]]"}    # Tiger Knee motion
+        "SJC" = @{color="cyan"; file="[[File:TVC-SJC.png|$imageSize]]"}  # Super Jump Cancel
         "drill" = @{color="pink"; file="[[File:TVC-L.png|$imageSize]] [[File:TVC-M.png|$imageSize]] -> [[File:TVC-L.png|$imageSize]] [[File:TVC-M.png|$imageSize]] -> [[File:TVC-M.png|$imageSize]] [[File:TVC-H.png|$imageSize]]"}
-        "charge" = @{color="blue"; file="[[File:TVC-charge.png|50px]]"} # Charge command
+        "charge" = @{color="white"; file="[[File:TVC-charge.png|50px]]"} # Charge command (inherits color from button grouping)
     }
 
-    # Define special underline colors for visual distinction
+    # Define special underline colors (same as numpad colors)
     $underlineMapping = @{
-        "A" = "yellow"
-        "B" = "green"
-        "C" = "blue"
-        "P" = "purple"
-        "X" = "purple"
-        "XX" = "purple"
-        "BBQ" = "orange"
-        "TK" = "gray"
-        "SJC" = "cyan"
-        "drill" = "pink"
-        "charge" = "blue"
+        "A" = "yellow"   # Light attack
+        "B" = "green"    # Medium attack
+        "C" = "blue"     # Heavy attack
+        "P" = "red"      # Partner/Assist
+        "X" = "purple"   # Special action
+        "XX" = "purple"  # Double special
+        "BBQ" = "gradient" # Burst mechanics
+        "TK" = "gray"    # Tiger Knee motion
+        "SJC" = "cyan"   # Super Jump Cancel
+        "drill" = "pink" # Drill macro
+        "charge" = "white" # Charge motion, overrides when grouped
     }
 
     # Define motion mappings for directional inputs
@@ -52,9 +52,9 @@ function Get-Mapping {
         "360" = "[[File:TVC-360.png|$imageSize]]"        # Full-circle motion
     }
 
-    # Return a structured mapping object
     return @{"mapping" = $mapping; "underlineMapping" = $underlineMapping; "motions" = $motions}
 }
+
 
 function Process-Token {
     param (
@@ -70,6 +70,74 @@ function Process-Token {
     $isJump = $token.StartsWith("J.")
     if ($isJump) {
         $token = $token.Substring(2)  # Remove the "j." prefix
+    }
+
+    # Handle grouped motions with buttons (e.g., 66, 66A, 22, 22C, etc.)
+    if ($token -match "^(22|66|44)([A-Z]*)$") {
+        $motion = $matches[1]
+        $button = $matches[2]
+
+        $motionFile = "$($motions[$motion.Substring(0, 1)]) $($motions[$motion.Substring(0, 1)])" # Duplicate motion file
+
+        # If there's a button (e.g., 66A, 22C)
+        if ($button -ne "") {
+            if ($mapping.ContainsKey($button)) {
+                $buttonFile = $mapping[$button]['file']
+                $buttonColor = $mapping[$button]['color']
+                $underlineColor = $underlineMapping[$button]
+
+                # Add "j." prefix back if applicable
+                $prefix = ""
+                if ($isJump) { $prefix = "j." }
+
+                return @(
+                    "{{TvCUnderline|color=$underlineColor|$prefix$motionFile $buttonFile}}",
+                    "{{TvC-Colors|$buttonColor|${prefix}${motion}$button}}"
+                )
+            }
+        } else {
+            # Handle standalone 66, 22, 44
+            return @(
+                "{{TvCUnderline|color=white|$motionFile}}",
+                "{{TvC-Colors|white|$motion}}"
+            )
+        }
+    }
+
+    # Handle charge groups (e.g., 2charge8, 4charge6, etc.)
+    if ($token -match "^([0-9])charge([0-9])([A-Z]*)$") {
+        $startDirection = $matches[1]
+        $endDirection = $matches[2]
+        $button = $matches[3]
+
+        if ($motions.ContainsKey($startDirection) -and $motions.ContainsKey($endDirection)) {
+            $startFile = $motions[$startDirection]
+            $endFile = $motions[$endDirection]
+            $chargeFile = $mapping["charge"]['file']
+            $chargeColor = $mapping["charge"]['color']
+
+            $prefix = ""
+            if ($isJump) { $prefix = "j." }
+
+            # If there's a button (e.g., 4charge6A)
+            if ($button -ne "") {
+                if ($mapping.ContainsKey($button)) {
+                    $buttonFile = $mapping[$button]['file']
+                    $buttonColor = $mapping[$button]['color']
+
+                    return @(
+                        "{{TvCUnderline|color=$buttonColor|$prefix$startFile $chargeFile $endFile $buttonFile}}",
+                        "{{TvC-Colors|$buttonColor|${prefix}${startDirection}charge${endDirection}$button}}"
+                    )
+                }
+            } else {
+                # Handle standalone charge (e.g., 4charge6)
+                return @(
+                    "{{TvCUnderline|color=$chargeColor|$prefix$startFile $chargeFile $endFile}}",
+                    "{{TvC-Colors|$chargeColor|${prefix}${startDirection}charge${endDirection}}}"
+                )
+            }
+        }
     }
 
     # Handle macro tokens like "drill"
@@ -92,7 +160,7 @@ function Process-Token {
     if ($mapping.ContainsKey($token)) {
         $file = $mapping[$token]['file']
         $color = $mapping[$token]['color']
-        $underlineColor = $underlineMapping[$token]
+        $underlineColor = $mapping[$token]['color']
 
         # Add "j." prefix back if applicable
         $prefix = ""
@@ -141,14 +209,12 @@ function Process-Token {
         # Add "j." prefix back if applicable
         $prefix = ""
         if ($isJump) { $prefix = "j." }
-
         return @("{{TvCUnderline|color=white|$prefix$motionFile}}", "{{TvC-Colors|white|$prefix$token}}")
     }
 
     # Return null if the token is unrecognized
     return @($null, $null)
 }
-
 
 
 # Main loop for user interaction
