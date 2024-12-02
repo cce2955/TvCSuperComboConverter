@@ -1,10 +1,9 @@
-
 # Function to define mappings for buttons and motions
 function Get-Mapping {
     param ([string]$token)
-	$imageSize = "30px"  # You can adjust this value as needed
+    $imageSize = "30px"  # You can adjust this value as needed
     # Define button mappings
-  $mapping = @{
+    $mapping = @{
         "A" = @{color="blue"; file="[[File:TVC-L.png|$imageSize]]"}    # Light attack
         "B" = @{color="yellow"; file="[[File:TVC-M.png|$imageSize]]"}  # Medium attack
         "C" = @{color="red"; file="[[File:TVC-H.png|$imageSize]]"}     # Heavy attack
@@ -15,7 +14,6 @@ function Get-Mapping {
         "SJC" = @{color="white"; file="[[File:TVC-SJC.png|$imageSize]]"} # Super Jump Cancel
     }
 
-    # Add a blank line to separate logical sections
     $motions = @{
         "5" = "[[File:TVC-neutral.png|$imageSize]]"       # Neutral position
         "2" = "[[File:TVC-2.png|$imageSize]]"            # Down direction
@@ -35,17 +33,10 @@ function Get-Mapping {
         "360" = "[[File:TVC-360.png|$imageSize]]"        # Full-circle motion
     }
 
-    # Special case: BBQ (with a gradient color background)
-    if ($token -eq "BBQ") {
-        $color = "linear-gradient(to right, #FF69B4, #FF1493, #FFA500, #FFD700, #00CED1)"
-        $file = "[[File:TVC-BBQ.png|50px]]"
-
-        return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
-    }
-
     return @{"mapping" = $mapping; "motions" = $motions}
 }
 
+# Function to process individual tokens (e.g., A, 236A, BBQ)
 # Function to process individual tokens (e.g., A, 236A, BBQ)
 function Process-Token {
     param (
@@ -53,7 +44,6 @@ function Process-Token {
         [hashtable]$mappingData
     )
 
-    # Extract button and motion mappings
     $mapping = $mappingData["mapping"]
     $motions = $mappingData["motions"]
 
@@ -61,11 +51,6 @@ function Process-Token {
     if ($mapping.ContainsKey($token)) {
         $file = $mapping[$token]['file']
         $color = $mapping[$token]['color']
-
-        # Special handling for BBQ to apply gradient underline
-        if ($token -eq "BBQ") {
-            $color = "linear-gradient(to right, #FF69B4, #FF1493, #FFA500, #FFD700, #00CED1)"
-        }
 
         return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
     }
@@ -80,29 +65,17 @@ function Process-Token {
             $buttonFile = $mapping[$button]['file']
             $buttonColor = $mapping[$button]['color']
 
-            $notation = "{{TvCUnderline|color=$buttonColor|$motionFile $buttonFile}}"
-            $color = "{{TvC-Colors|$buttonColor|$motion$button}}"
-
-            return @($notation, $color)
+            return @(
+                "{{TvCUnderline|color=$buttonColor|$motionFile $buttonFile}}", 
+                "{{TvC-Colors|$buttonColor|$motion$button}}"
+            )
         }
-    }
-
-    # Handle standalone buttons
-    if ($mapping.ContainsKey($token)) {
-        $file = $mapping[$token]['file']
-        $color = $mapping[$token]['color']
-
-        return @("{{TvCUnderline|color=$color|$file}}", "{{TvC-Colors|$color|$token}}")
     }
 
     # Handle standalone motions
     if ($motions.ContainsKey($token)) {
         $motionFile = $motions[$token]
-
-        $notation = "{{TvCUnderline|color=white|$motionFile}}"
-        $color = "{{TvC-Colors|white|$token}}"
-
-        return @($notation, $color)
+        return @("{{TvCUnderline|color=white|$motionFile}}", "{{TvC-Colors|white|$token}}")
     }
 
     return @($null, $null) # If unrecognized
@@ -115,46 +88,33 @@ while ($true) {
     Write-Host "==================================================="
 
     $input = Read-Host "Enter a numpad notation sequence (e.g., A B 236C) or type 'exit' to quit"
-	write-Host ""
-	Write-Host "-----------------------------------------------------------------------------------"
-	Write-Host "----------------Everything below this line can be copied to the wiki---------------"
-	Write-Host "-----------------------------------------------------------------------------------"
-	write-Host ""
-	write-Host ""
-	write-Host ""
-    if ($input -eq "exit") {
-        break
-    }
+    if ($input -eq "exit") { break }
 
-    # Load mappings
     $mappingData = Get-Mapping
-
-    # Tokenize user input
     $tokens = $input.ToUpper() -split ' '
 
-    # Initialize result storage
     $notationResult = @()
     $colorResult = @()
 
-    # Process tokens
     foreach ($token in $tokens) {
         $results = Process-Token -token $token -mappingData $mappingData
 
         if ($results[0] -ne $null) {
-            $notationResult += $results[0]
+            # Append tab-like space (&emsp;) after each notation
+            $notationResult += "$($results[0]) &emsp;"  # Tab space added explicitly
         }
-
         if ($results[1] -ne $null) {
-            $colorResult += $results[1]
+            # Add tab-like spacing for color-coded output
+            $colorResult += "$($results[1]) &emsp;"
         }
     }
 
-    # Output results
-    Write-Host "|notation= $($notationResult -join ' ')"
+    # Join results, which already have explicit tab-like spaces, and trim any trailing spaces
+    $notationOutput = ($notationResult -join '').TrimEnd('&emsp;')
+    $colorOutput = ($colorResult -join '').TrimEnd('&emsp;')
 
-    if ($colorResult.Count -gt 0) {
-        Write-Host "`n$($colorResult -join ' &ensp; ')"
-    }
-
+    Write-Host ""
+    Write-Host "|notation= $notationOutput"
+    Write-Host "`n$colorOutput"
     Write-Host ""
 }
