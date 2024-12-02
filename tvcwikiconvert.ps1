@@ -8,10 +8,11 @@ function Get-Mapping {
         "B" = @{color="yellow"; file="[[File:TVC-M.png|$imageSize]]"}  # Medium attack
         "C" = @{color="red"; file="[[File:TVC-H.png|$imageSize]]"}     # Heavy attack
         "P" = @{color="green"; file="[[File:TVC-P.png|$imageSize]]"}   # Partner/Assist
-        "X" = @{color="green"; file="[[File:TVC-AT.png|$imageSize]]"}  # Special action
-        "BBQ" = @{color="bbq"; file="[[File:TVC-BBQ.png|$imageSize]]"} # Burst mechanics
-        "TK" = @{color="white"; file="[[File:TVC-TK.png|$imageSize]]"} # Tiger Knee motion
-        "SJC" = @{color="white"; file="[[File:TVC-SJC.png|$imageSize]]"} # Super Jump Cancel
+        "X" = @{color="purple"; file="[[File:TVC-AT.png|$imageSize]]"} # Special action
+        "XX" = @{color="green"; file="[[File:TVC-AT.png|$imageSize]] [[File:TVC-AT.png|$imageSize]]"} # Double special
+        "BBQ" = @{color="orange"; file="[[File:TVC-BBQ.png|$imageSize]]"} # Burst mechanics
+        "TK" = @{color="gray"; file="[[File:TVC-TK.png|$imageSize]]"}  # Tiger Knee motion
+        "SJC" = @{color="cyan"; file="[[File:TVC-SJC.png|$imageSize]]"} # Super Jump Cancel
     }
 
     # Define special underline colors
@@ -21,6 +22,7 @@ function Get-Mapping {
         "C" = "blue"
         "P" = "purple"
         "X" = "purple"
+        "XX" = "purple"
         "BBQ" = "orange"
         "TK" = "gray"
         "SJC" = "cyan"
@@ -48,6 +50,7 @@ function Get-Mapping {
     return @{"mapping" = $mapping; "underlineMapping" = $underlineMapping; "motions" = $motions}
 }
 
+
 function Process-Token {
     param (
         [string]$token,
@@ -58,7 +61,7 @@ function Process-Token {
     $underlineMapping = $mappingData["underlineMapping"]
     $motions = $mappingData["motions"]
 
-    # Handle special tokens (e.g., BBQ, TK, SJC)
+    # Handle special tokens (e.g., BBQ, TK, SJC, XX)
     if ($mapping.ContainsKey($token)) {
         $file = $mapping[$token]['file']
         $color = $mapping[$token]['color']
@@ -70,7 +73,7 @@ function Process-Token {
         )
     }
 
-    # Handle mixed tokens (e.g., 236A)
+    # Handle mixed tokens (e.g., 236A, 236XX)
     if ($token -match "^([0-9]+)([A-Z]+)$") {
         $motion = $matches[1]
         $button = $matches[2]
@@ -80,6 +83,15 @@ function Process-Token {
             $buttonFile = $mapping[$button]['file']
             $buttonColor = $mapping[$button]['color']
             $underlineColor = $underlineMapping[$button]
+
+            # Special case: 236XX maps to 236XX/236ATAT
+            if ($button -eq "XX") {
+                $groupedFile = "$motionFile $buttonFile"
+                return @(
+                    "{{TvCUnderline|color=$underlineColor|$groupedFile}}",
+                    "{{TvC-Colors|$buttonColor|$motion$button}}"
+                )
+            }
 
             return @(
                 "{{TvCUnderline|color=$underlineColor|$motionFile $buttonFile}}",
@@ -96,6 +108,7 @@ function Process-Token {
 
     return @($null, $null) # If unrecognized
 }
+
 
 # Main loop for user interaction
 while ($true) {
