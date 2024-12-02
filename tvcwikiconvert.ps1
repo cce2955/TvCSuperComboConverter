@@ -146,41 +146,50 @@ if ($token -match "\.") {
     )
 }
 
-    # Handle charge groups (e.g., 2charge8, 4charge6, etc.)
-    if ($token -match "^([0-9])charge([0-9])([A-Z]*)$") {
-        $startDirection = $matches[1]
-        $endDirection = $matches[2]
-        $button = $matches[3]
+  # Handle charge groups (e.g., 2charge8, 4charge6, etc.)
+if ($token -match "^([0-9])charge([0-9])([A-Z]*)$") {
+    $startDirection = $matches[1]
+    $endDirection = $matches[2]
+    $button = $matches[3]
 
-        if ($motions.ContainsKey($startDirection) -and $motions.ContainsKey($endDirection)) {
-            $startFile = $motions[$startDirection]
-            $endFile = $motions[$endDirection]
-            $chargeFile = $mapping["charge"]['file']
-            $chargeColor = $mapping["charge"]['color']
+    if ($motions.ContainsKey($startDirection) -and $motions.ContainsKey($endDirection)) {
+        $startFile = $motions[$startDirection]
+        $endFile = $motions[$endDirection]
+        $chargeFile = $mapping["charge"]['file']
+        $chargeColor = $mapping["charge"]['color']
 
-            $prefix = ""
-            if ($isJump) { $prefix = "j." }
+        $prefix = ""
+        if ($isJump) { $prefix = "j." }
 
-            # If there's a button (e.g., 4charge6A)
-            if ($button -ne "") {
-                if ($mapping.ContainsKey($button)) {
-                    $buttonFile = $mapping[$button]['file']
-                    $buttonColor = $mapping[$button]['color']
+        # Format the numpad notation as [X]YButton
+        $formattedNotation = "[$startDirection]$endDirection"
+        if ($button -ne "") {
+            $formattedNotation += "$button"
+        }
 
-                    return @(
-                        "{{TvCUnderline|color=$buttonColor|$prefix$startFile $chargeFile $endFile $buttonFile}}",
-                        "{{TvC-Colors|$buttonColor|${prefix}${startDirection}charge${endDirection}$button}}"
-                    )
-                }
-            } else {
-                # Handle standalone charge (e.g., 4charge6)
+        # If there's a button (e.g., 4charge6A)
+        if ($button -ne "") {
+            if ($mapping.ContainsKey($button)) {
+                $buttonFile = $mapping[$button]['file']
+                $buttonColor = $mapping[$button]['color']
+
                 return @(
-                    "{{TvCUnderline|color=$chargeColor|$prefix$startFile $chargeFile $endFile}}",
-                    "{{TvC-Colors|$chargeColor|${prefix}${startDirection}charge${endDirection}}}"
+                    "{{TvCUnderline|color=$buttonColor|$prefix$startFile $chargeFile $endFile $buttonFile}}",
+                    "{{TvC-Colors|$buttonColor|${prefix}${formattedNotation}}}"
                 )
             }
+        } else {
+            # Handle standalone charge (e.g., 4charge6)
+            return @(
+                "{{TvCUnderline|color=$chargeColor|$prefix$startFile $chargeFile $endFile}}",
+                "{{TvC-Colors|$chargeColor|${prefix}${formattedNotation}}}"
+            )
         }
     }
+}
+
+
+
 
     # Handle macro tokens like "drill"
     if ($token -eq "drill") {
@@ -208,11 +217,20 @@ if ($mapping.ContainsKey($token)) {
     $prefix = ""
     if ($isJump) { $prefix = "j." }
 
+    # Special case for BBQ: Apply a rainbow gradient
+    if ($token -eq "BBQ") {
+        return @(
+            "{{TvCUnderline|color=$underlineColor|$prefix$file}}",
+            "{{TvC-Colors|bbq|$prefix$token}}"
+        )
+    }
+
     return @(
         "{{TvCUnderline|color=$underlineColor|$prefix$file}}",
         "{{TvC-Colors|$color|$prefix$token}}"
     )
 }
+
 
 
     # Handle mixed tokens (e.g., 236A, 236XX)
@@ -292,6 +310,55 @@ while ($true) {
    Write-Host "==================================================="
 Write-Host "TvC Wiki Numpad Notation Converter"
 Write-Host "==================================================="
+Write-Host "==================================================="
+Write-Host "==================================================="
+Write-Host "==================================================="
+Write-Host "Look I know this is a lot I'm about to just put all this on a wiki page and reference the hyperlink here momentarily"
+Write-Host "==================================================="
+Write-Host "==================================================="
+Write-Host "==================================================="
+Write-Host "==================================================="
+Write-Host ""
+Write-Host "Tutorial:"
+Write-Host "This tool converts TvC numpad notation sequences into a super combo-ready format for Tatsunoko vs. Capcom: Ultimate All Stars."
+Write-Host ""
+Write-Host "How to Use:"
+Write-Host "1. Enter a sequence of inputs using standard TvC numpad notation (e.g., A B 236C)."
+Write-Host "2. Use the following commands for advanced inputs:"
+Write-Host ""
+Write-Host "   Charge Commands:"
+Write-Host "   - Use 'charge' to represent charging motions combined with directions."
+Write-Host "     Example: 4charge6 outputs as a grouped charge motion from back to forward."
+Write-Host "     Example: 2charge8 outputs as a grouped charge motion from down to up."
+Write-Host "     You can also group charge with a button:"
+Write-Host "     Example: 4charge6A outputs the grouped charge motion combined with a Light (L) attack."
+Write-Host ""
+Write-Host "   Directional Groupings:"
+Write-Host "   - Inputs like 22, 66, or 44 represent repeated directional motions."
+Write-Host "     Example: 66 outputs a double forward motion."
+Write-Host "     Example: 22C outputs a repeated down motion combined with a Heavy (H) attack."
+Write-Host "   - You can also prefix motions with 'j.' to represent jumping motions."
+Write-Host "     Example: j.66 outputs a double forward motion while jumping."
+Write-Host "     Example: j.22C outputs a repeated down motion combined with a Heavy (H) attack while jumping."
+Write-Host ""
+Write-Host "   Special Commands:"
+Write-Host "   - 'drill': Outputs a macro representing the sequence LM -> LM -> MH."
+Write-Host "     Example: drill outputs the entire sequence grouped."
+Write-Host "   - 'BBQ': Outputs the Burst mechanic with its gradient color and icon."
+Write-Host ""
+Write-Host "Examples:"
+Write-Host "   Input: A B C 236X"
+Write-Host "   Output: Icons and numpad notation for Light (A), Medium (B), Heavy (C), and a Hadouken motion with a Special (X) action."
+Write-Host ""
+Write-Host "   Input: 4charge6B"
+Write-Host "   Output: Icons and numpad notation for a charge motion from back to forward combined with a Medium (M) attack."
+Write-Host ""
+Write-Host "   Input: j.22C"
+Write-Host "   Output: Icons and numpad notation for a repeated down motion combined with a Heavy (H) attack while jumping."
+Write-Host ""
+Write-Host "   Input: drill"
+Write-Host "   Output: Icons and notation for LM -> LM -> MH macro."
+Write-Host ""
 Write-Host "Type 'exit' to quit the tool."
 Write-Host ""
 
