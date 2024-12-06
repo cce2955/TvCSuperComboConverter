@@ -18,6 +18,7 @@ function Get-Mapping {
         "hold" = @{color="orange"; file="[[File:TvC-hold.png|75px]]"} # Hold down
         "release" = @{color="purple"; file="[[File:TVC-Release.png|50px]]"} # Release button
 		"~JC" = @{color="skyblue"; file="jump cancel"} # Jump Cancel
+		"Mash" = @{color="purple"; file="[[File:TVC-Mash.png|$imageSize]]"} # Mash command
 
     }
 
@@ -37,6 +38,7 @@ function Get-Mapping {
         "hold" = "orange" # Hold down
         "release" = "purple" # Release button
 		"~JC" = "skyblue" # Jump Cancel underline
+		 "Mash" = "magenta"
 
     }
 
@@ -187,6 +189,24 @@ if ($token -match "^([0-9])charge([0-9])([A-Z]*)$") {
         }
     }
 }
+# Handle "Mash" commands, e.g., *A, *B, *C
+if ($token -match "^\*(\w)$") {
+    $button = $matches[1]
+    
+    if ($mapping.ContainsKey($button)) {
+        $buttonFile = $mapping[$button]['file']
+        $buttonColor = $mapping[$button]['color']
+        $mashFile = $mapping["Mash"]['file']
+        $mashColor = $mapping["Mash"]["color"]
+        $underlineColor = $underlineMapping["Mash"]  # Use distinct underline color for Mash
+
+        return @(
+            "{{TvCUnderline|color=$underlineColor|$mashFile}}($buttonFile)",
+            "{{TvC-Colors|$mashColor|*${button}}}"
+        )
+    }
+}
+
 
 
 
